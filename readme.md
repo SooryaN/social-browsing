@@ -20,3 +20,7 @@ End point | Method | Params | Returns | Comments
 ----------|--------|--------|---------|---------
 /visited/ | GET    | *None* | History | Lol     
 
+First Header  | Second Header
+------------- | -------------
+Content Cell  | Content Cell
+Content Cell  | Content Cell
