@@ -18,9 +18,4 @@ The following three are the API end points:
 
 End point | Method | Params | Returns | Comments
 ----------|--------|--------|---------|---------
-/visited/ | GET    | *None* | History | Lol     
-
-First Header  | Second Header
-------------- | -------------
-Content Cell  | Content Cell
-Content Cell  | Content Cell
+/visited/ | GET | *None*| History| Lol
