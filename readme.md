@@ -137,7 +137,7 @@ DataTypes
 ---
 
 UserHistory:
-:::javascript
+```json```
 {
     "userid": <string>,
     "page": <integer>,
@@ -152,9 +152,10 @@ UserHistory:
         .
     ]
 }
+```
 
 PageData:
-:::javascript
+```json```
 {
     "url": <string>,
     "visits": [
@@ -176,3 +177,4 @@ PageData:
         .
     ]
 }
+```
