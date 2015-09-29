@@ -137,7 +137,7 @@ DataTypes
 ---
 
 UserHistory:
-```json```
+```
 {
     "userid": <string>,
     "page": <integer>,
@@ -155,7 +155,7 @@ UserHistory:
 ```
 
 PageData:
-```json```
+```
 {
     "url": <string>,
     "visits": [
