@@ -16,6 +16,7 @@ The following three are the API end points:
   - **/comments**
   - **/messages**
 
-| End point | Method | Params | Returns | Comments |
-----------------------------------------------------
-| /visited/ | GET | *None* | History | Lol |
+End point | Method | Params | Returns | Comments
+----------|--------|--------|---------|---------
+/visited/ | GET    | *None* | History | Lol     
+
