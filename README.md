@@ -1,5 +1,6 @@
 #social-browsing  
 
+lulz
 The information we'll be maintaining:
 
   1. Sites visited (userid, url, host, time)
