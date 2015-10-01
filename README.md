@@ -236,7 +236,7 @@ public    | Data Param | bool         | True         | *N/A*
 
   We will need to make this secure later, because the html we're 
   storing is directly dumped onto the receiver's browser, 
-  including the <script> tags. This might have security issues,
+  including the &lt;script&rt; tags. This might have security issues,
   though I haven'thought through it yet.
 
 ---
