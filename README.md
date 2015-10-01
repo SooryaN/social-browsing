@@ -74,21 +74,20 @@ url       | Data Param | string       | True         | *N/A*
 
 ---
 
-**Comment on a page**
+**Visit a page**
 ----
 **URL**   | **Method**
 ----------|------------
-/comments | **POST**
+/visited  | **POST**
 
 **Param** | **Type**   | **DataType** | **Required** | **Default**
 ----------|------------|--------------|--------------|------------
 url       | Data Param | string       | True         | *N/A*      
-comment   | Data Param | string       | True         | *N/A*      
 
 * **Success Response:**
 
     > **Code:** 200 <br>
-    > **Content:** Empty
+    > **Content:** PageData object
  
 * **Error Response:**
 
