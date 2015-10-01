@@ -61,6 +61,17 @@ def get_user(id):
         abort(400)
     return jsonify({'username': user.username})
 
+@app.route('/api/users/remove/<string:uname>')
+def del_user(id):
+    user_table = db.Table('users',metadata,autoload=True)
+    user = User.query.filter(User.username == uname)
+    if not user:
+        abort(400)
+    else:
+        name = user.username
+        user.delete()
+        db.session.commit()
+    return jsonify({'username': name})
 
 @app.route('/api/resource')
 @auth.login_required
