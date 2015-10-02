@@ -10,7 +10,7 @@ auth = HTTPBasicAuth()
 db = SQLAlchemy(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
 app.config['SECRET_KEY'] = 'the quick brown fox jumps over the lazy dog'
-app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
+# app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 
 from models import *
 
@@ -73,8 +73,7 @@ def get_user(id):
 
 @app.route('/api/users/remove/<string:uname>')
 def del_user(uname):
-    print "uname", uname
-    user = User.query.filter_by(username= uname)
+    user = User.query.filter_by(username=uname)
     if not user:
         abort(400)
     else:
@@ -84,10 +83,15 @@ def del_user(uname):
     return jsonify({'username': name})
 
 # returns user history
-@app.route('/api/history/<string:uname>', methods=['GET'])
+
+
+@app.route('/visited/<string:uname>', methods=['GET'])
 # @auth.login_required
 def get_user_history(uname):
-    userid = uname
+    try:
+        userid = g.user.username
+    except:
+        userid = username
     allVisits = Visited_logs.query.all()
     pagelist = set()
     pages = {}
@@ -107,7 +111,9 @@ def get_user_history(uname):
 # Logs in the logged in user's visit to a page
 
 # Add user visit to db
-@app.route('/api/visit', methods=['POST'])
+
+
+@app.route('/visited', methods=['POST'])
 # @auth.login_required
 def add_to_visited():
     if not request.json:
@@ -117,47 +123,81 @@ def add_to_visited():
         try:
             userid = g.user.username
         except:
-            userid = request.json['username']
-        host = request.json['host']
+            userid = request.json['userid']
         url = request.json['url']
+        try:
+            host = request.json['host']
+        except:
+            host = 'http://'+url.split('/')[2]
+
         time = datetime.now()
-        session_time_spent = request.json['session_time_spent']
+        viewTime = datetime.fromtimestamp(int(request.json['viewTime']))
+        endViewTime = datetime.fromtimestamp(int(request.json['endViewTime']))
+        # session_time_spent = endViewTime - viewTime
         # print userid, url, host, time, session_time_spent
-        visit = Visited_logs(userid, url, host, time, session_time_spent)
+        visit = Visited_logs(userid, url, host, viewTime, endViewTime)
         db.session.add(visit)
         db.session.commit()
-        visit = Visited_logs.query.all()[-1]
-        visit = visit.__dict__
-        visit.pop('_sa_instance_state',0)
-
-    return jsonify({'visit_info': visit}), 201
-
-# returns the given url's pageData
-@app.route('/api/pageData', methods=['POST'])
-def return_pagedata():
-    if not request.json:
-        abort(400)
-    url = request.json['url']
-    visits = Visited_logs.query.filter_by(url=url)
-    users = set()
-    for i in visits:
-        users.add(i.userid)
-    visitsList = []
-    commentsList = []
-    for u in User.query.all():
-        if u.username in users:
-            u = u.__dict__
-            u.pop('_sa_instance_state', 0)
-            visitsList.append(u)
-    comments = Comments.query.filter_by(url=url)
-    for c in comments:
-        c = c.__dict__
-        c.pop('_sa_instance_state', 0)
-        commentsList.append(c)
+        visits = Visited_logs.query.filter_by(url=url)
+        users = set()
+        for i in visits:
+            users.add(i.userid)
+        visitsList = []
+        commentsList = []
+        for u in User.query.all():
+            if u.username in users:
+                u = u.__dict__
+                u.pop('_sa_instance_state', 0)
+                visitsList.append(u)
+        comments = Comments.query.filter_by(url=url)
+        for c in comments:
+            c = c.__dict__
+            c.pop('_sa_instance_state', 0)
+            commentsList.append(c)
     return jsonify({'url': url, 'visits': visitsList, 'comments': commentsList}), 201
 
+
+@app.route('/visited/<int:visitid>', methods=['DELETE'])
+# @auth.login_required
+def delete_page_view(visitid):
+    view = Visited_logs.query.filter_by(id=visitid)
+    if not view:
+        abort(400)
+    else:
+        view.delete()
+        db.session.commit()
+    return jsonify({'status': 'Delete Successful'})
+
+
+# # returns the given url's pageData
+# @app.route('/api/pageData', methods=['POST'])
+# def return_pagedata():
+#     if not request.json:
+#         abort(400)
+#     url = request.json['url']
+#     visits = Visited_logs.query.filter_by(url=url)
+#     users = set()
+#     for i in visits:
+#         users.add(i.userid)
+#     visitsList = []
+#     commentsList = []
+#     for u in User.query.all():
+#         if u.username in users:
+#             u = u.__dict__
+#             u.pop('_sa_instance_state', 0)
+#             visitsList.append(u)
+#     comments = Comments.query.filter_by(url=url)
+#     for c in comments:
+#         c = c.__dict__
+#         c.pop('_sa_instance_state', 0)
+#         commentsList.append(c)
+# return jsonify({'url': url, 'visits': visitsList, 'comments':
+# commentsList}), 201
+
 # Logs a comment
-@app.route('/api/comment', methods=['POST'])
+
+
+@app.route('/comments', methods=['POST'])
 # @auth.login_required
 def create_task():
     if not request.json:
@@ -167,18 +207,86 @@ def create_task():
             userid = g.user.username
         except:
             userid = request.json['username']
-        title = request.json['title']
         comment = request.json['comment']
         url = request.json['url']
         time = datetime.now()
-        commentObj = Comments(userid, title, comment, time, url)
+        commentObj = Comments(userid, comment, time, url)
         db.session.add(commentObj)
         db.session.commit()
         commentObj = Comments.query.all()[-1]
         commentObj = commentObj.__dict__
-        commentObj.pop('_sa_instance_state',0)
+        commentObj.pop('_sa_instance_state', 0)
 
-    return  jsonify({'comment': commentObj}), 201
+    return jsonify({'comment': commentObj}), 201
+
+
+@app.route('/comments/<int:commentid>', methods=['DELETE'])
+# @auth.login_required
+def delete_comment(commentid):
+    comment = Comments.query.filter_by(id=commentid)
+    if not comment:
+        abort(400)
+    else:
+        comment.delete()
+        db.session.commit()
+    return jsonify({'status': 'Delete Successful'})
+
+@app.route('/messages/<int:receiverid>', methods=['POST'])
+# @auth.login_required
+def send_a_message(receiverid):
+    if not request.json:
+        abort(400)
+    try:
+        senderid = g.user.username
+    except:
+        senderid = request.json['username']
+    # if receiverid not in g.user.friends:
+    #     abort(400)
+    url = request.json['url']
+    messageText = request.json['message']
+    html = request.json['html']
+    if request.json['public']=="True":
+        public = True
+    else:
+        public = False
+    time = datetime.now()
+    message = Messages(url, senderid, receiverid, messageText, html, public, time)
+    db.session.add(message)
+    db.session.commit()
+    message = Messages.query.all()[-1]
+    message = message.__dict__
+
+    return jsonify({'messageid': message['id']}), 201
+        
+@app.route('/messages',methods = ['GET'])
+# @auth.login_required
+def view_messages():
+    try:
+        since = request.get['since']
+    except:
+        since = datetime.now()
+    try:
+        limit = request.get['limit']
+    except:
+        limit = 10
+    messageList = []
+    messages = Messages.query.limit(limit).all()
+    for c in messages:
+        c = c.__dict__
+        c.pop('_sa_instance_state', 0)
+        c.pop('html', 0)        
+        messageList.append(c)
+    return jsonify({'messages': messageList}), 201
+
+@app.route('/messages/seen/<int:messageid>',methods = ['POST'])
+# @auth.login_required
+def open_message(messageid):
+    message = Messages.query.filter_by(id = messageid).first()
+    message.seen = True
+    db.session.commit()
+    message = message.__dict__
+    message.pop('_sa_instance_state',0)
+    return jsonify({'message': message}),201
 
 
 if __name__ == '__main__':
