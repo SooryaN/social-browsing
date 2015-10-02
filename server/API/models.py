@@ -32,15 +32,17 @@ class Visited_logs(db.Model):
     # A python datetime object
     starttime = db.Column(db.DateTime, nullable=False)
     endtime = db.Column(db.DateTime, nullable=False)
+    time_spent = db.Column(db.Integer, nullable=False)
+
     # children = relationship('Comments')
 
-    def __init__(self, userid, url, host, starttime, endtime):
+    def __init__(self, userid, url, host, starttime, endtime, time_spent):
         self.userid = userid
         self.url = url
         self.host = host
         self.starttime = starttime
         self.endtime = endtime
-        # self.session_time_spent = session_time_spent
+        self.time_spent = time_spent
 
     def __repr__(self):
         return "<Url is '%s'" % (self.url)

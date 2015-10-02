@@ -85,13 +85,13 @@ def del_user(uname):
 # returns user history
 
 
-@app.route('/visited/<string:uname>', methods=['GET'])
+@app.route('/visited/<int:uid>', methods=['GET'])
 # @auth.login_required
-def get_user_history(uname):
+def get_user_history(uid):
     try:
-        userid = g.user.username
+        userid = g.user.id
     except:
-        userid = username
+        userid = uid
     allVisits = Visited_logs.query.all()
     pagelist = set()
     pages = {}
@@ -133,9 +133,11 @@ def add_to_visited():
         time = datetime.now()
         viewTime = datetime.fromtimestamp(int(request.json['viewTime']))
         endViewTime = datetime.fromtimestamp(int(request.json['endViewTime']))
-        # session_time_spent = endViewTime - viewTime
+
+        time_spent = endViewTime - viewTime
+        time_spent = time_spent.total_seconds()
         # print userid, url, host, time, session_time_spent
-        visit = Visited_logs(userid, url, host, viewTime, endViewTime)
+        visit = Visited_logs(userid, url, host, viewTime, endViewTime,time_spent)
         db.session.add(visit)
         db.session.commit()
         visits = Visited_logs.query.filter_by(url=url)
@@ -231,34 +233,37 @@ def delete_comment(commentid):
         db.session.commit()
     return jsonify({'status': 'Delete Successful'})
 
+
 @app.route('/messages/<int:receiverid>', methods=['POST'])
 # @auth.login_required
 def send_a_message(receiverid):
     if not request.json:
         abort(400)
     try:
-        senderid = g.user.username
+        senderid = g.user.id
     except:
-        senderid = request.json['username']
+        senderid = request.json['userid']
     # if receiverid not in g.user.friends:
     #     abort(400)
     url = request.json['url']
     messageText = request.json['message']
     html = request.json['html']
-    if request.json['public']=="True":
+    if request.json['public'] == "True":
         public = True
     else:
         public = False
     time = datetime.now()
-    message = Messages(url, senderid, receiverid, messageText, html, public, time)
+    message = Messages(
+        url, senderid, receiverid, messageText, html, public, time)
     db.session.add(message)
     db.session.commit()
     message = Messages.query.all()[-1]
     message = message.__dict__
 
     return jsonify({'messageid': message['id']}), 201
-        
-@app.route('/messages',methods = ['GET'])
+
+
+@app.route('/messages', methods=['GET'])
 # @auth.login_required
 def view_messages():
     try:
@@ -274,19 +279,20 @@ def view_messages():
     for c in messages:
         c = c.__dict__
         c.pop('_sa_instance_state', 0)
-        c.pop('html', 0)        
+        c.pop('html', 0)
         messageList.append(c)
     return jsonify({'messages': messageList}), 201
 
-@app.route('/messages/seen/<int:messageid>',methods = ['POST'])
+
+@app.route('/messages/seen/<int:messageid>', methods=['POST'])
 # @auth.login_required
 def open_message(messageid):
-    message = Messages.query.filter_by(id = messageid).first()
+    message = Messages.query.filter_by(id=messageid).first()
     message.seen = True
     db.session.commit()
     message = message.__dict__
-    message.pop('_sa_instance_state',0)
-    return jsonify({'message': message}),201
+    message.pop('_sa_instance_state', 0)
+    return jsonify({'message': message}), 201
 
 
 if __name__ == '__main__':
