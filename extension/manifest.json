@@ -10,7 +10,8 @@
 	},
 
 	"background": {
-		"scripts": ["jquery-1.11.3.min.js", "background.js"]
+		/*"scripts": ["jquery-1.11.3.min.js", "background.js"],*/
+		"page": "backgroundlulz.html"
 	},
 
 	"browser_action": {
@@ -19,12 +20,14 @@
 		"default_popup": "popup.html"
 	},
 	"permissions": [
+		"alarms",
     	"activeTab",
 	    "webRequest",
 	    "webRequestBlocking",
 	    "cookies",
 	    "https://*/*",
-		"tabs"
+		"tabs",
+		"storage"
 	],
 	"optional_permissions":["http://*/"]
 }
