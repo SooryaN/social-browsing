@@ -1,7 +1,7 @@
 from sample import db
 from flask.ext.sqlalchemy import sqlalchemy
 from sqlalchemy.orm import relationship, backref
-from passlib.apps import custom_app_context as pwd_context
+#from passlib.apps import custom_app_context as pwd_context
 
 
 class User(db.Model):

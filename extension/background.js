@@ -1,9 +1,9 @@
-var viewTime;
+var viewTime = new Date();
 var url;
 var endViewTime;
 var elapsedTime;
 //HOST URL
-var hosturl = "";
+var hosturl = "127.0.0.1:5000";
 var host;
 var views;
 var userid = "";
@@ -16,27 +16,6 @@ function informVisited(url, viewTime, endViewTime, host, elapsedTime, hosturl) {
 		console.log("HIIHI");
 	};
 	xhr.send("url ="+String(url)+"&userid="+String("HFDJKOWHFDOKJW")+"&viewTime="+String(viewTime)+"&endViewTime="+String(endViewTime)+"&timespent="+String(elapsedTime)+"&host="+String(host));
-/*
-    	$.ajax({
-    		type: "POST",
-    		url: hosturl + "/visited",
-    		async: true,
-    		processData: true,
-    		data: {
-    			'url' : String(url),
-    			'userid': String("HFDJKOWHFDOKJW"),
-    			'viewTime': String(viewTime),
-    			'endViewTime':String(endViewTime),
-    			'timespent': String(elapsedTime),
-    			'host': String(host)
-    		},
-    		success: function(data) {
-    			console.log("HIHIH");
-    		},
-    		error: function(jqxhr, status, message) {
-    			console.log("Yep...it failed :");
-    		}
-    	});*/
 }
 
 function getViews(userid, url, hosturl) {
@@ -50,48 +29,30 @@ function getViews(userid, url, hosturl) {
 	}
 	xhr.send("url="+String(url)+"&userid="+String(userid));
 
-/*	$.ajax({
-		type: "GET",
-		url: hosturl + "/visited",
-		async: true,
-		processData: true,
-		data: {
-			'url': String(url),
-			'userid': String(userid),
-		},
-		success: function(data) {
-			received_views = data['content'];
-		},
-		error: function(jqxhr, status, message) {
-			alert("Failed");
-		}
-	}); */
-
 	return received_views;
 }
 
-window.addEventListener('Loaded', function() {
-	getPageData();
-});
 
 function getPageData() {
-
+	alert("O");
+	var d = new Date();
+	var viewTime = d.getTime()
     //get the time of view
-	viewTime = Date.now();
+	//viewTime = Date.now();
 	//When the tab has completed loading
     chrome.tabs.onUpdated.addListener( function (tabId, changeInfo, tab) {
     	if(changeInfo.status == 'complete' && tab.active) {
-    		
+    		alert("HI");
     		//When the tab is active and the most recently focused window
     		chrome.tabs.query({'active': true, 'lastFocusedWindow': true}, function(tabs) {
 		    	
 		    	//get the URL
 		    	url = tabs[0].url;
-		    	document.getElementById("box").innerHTML = url;
+		    	//document.getElementById("box").innerHTML = url;
 
 		    	views = getViews(userid, url,hosturl);
 		    	alert("K");
-		    	document.getElementById("num_views").innerHTML = views;
+		    	document.getElementById("num_views").innerHTML = String(views);
 
 		    	host = window.location.hostname;
 		    });
@@ -105,14 +66,20 @@ function getPageData() {
 	    chrome.tabs.onRemoved.addListener( function (tabId, removeInfo) {
 	    	endViewTime = Date.now();
 	    	elapsedTime = endViewTime - viewTime;
-
+	    	alert("HIHIHHIIH");
 	    	informVisited(url, viewTime, endViewTime, hosturl, elapsedTime, host);
 	    });
 
 }
 
+window.addEventListener('Loaded', function() {
+	alert("Loaded");
+	getPageData();
+});
+
+
 
 window.addEventListener("hashchange", function() {
-	//informVisited(url, viewTime, endViewTime, host, elapsedTime, hosturl);
+	informVisited(url, viewTime, endViewTime, host, elapsedTime, hosturl);
 	alert("HIHIIIII");
 ;});
