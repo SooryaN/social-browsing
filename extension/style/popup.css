@@ -1,0 +1,9 @@
+.box {
+	width: 200px;
+	height: 300px;
+}
+
+.views {
+	min-width: 40px;
+	min-height: 20px;
+}

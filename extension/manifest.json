@@ -4,20 +4,26 @@
 	"name": "Social Browsing",
 	"description": "This extension makes web browsing more social",
 	"version": "1.0",
-	"content_security_policy": "script-src 'self' https://connect.facebook.net; object-src 'self'",
 
-	"browser_action": {
-		"default_icon": "icon.png",
-		"default_popup": "popup.html"
+	"chrome_url_overrides": {
+		"newtab": "newtab.html"
 	},
+
 	"background": {
 		"scripts": ["background.js"]
+	},
+
+	"browser_action": {
+		"default_title": "SoBro",
+		"default_icon": "images/icon.png",
+		"default_popup": "popup.html"
 	},
 	"permissions": [
     	"activeTab",
 	    "webRequest",
 	    "webRequestBlocking",
 	    "cookies",
-	    "https://*/*"
+	    "https://*/*",
+		"tabs"
 	]
 }
