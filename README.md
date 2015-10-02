@@ -3,7 +3,7 @@
 lulz
 The information we'll be maintaining:
 
-  1. Sites visited (userid, url, host, time)
+  1. Sites visited (userid, url, host, time, timespent)
   2. Comments (userid, url, comment, time)
   3. Messages (senderid, receiverid, html, seen, time)
 
@@ -62,9 +62,9 @@ page      | Url Param  | string       | False        | 1
 ----------|------------
 /visited  | **POST**
 
-**Param** | **Type**   | **DataType** | **Required** | **Default**
-----------|------------|--------------|--------------|------------
-url       | Data Param | string       | True         | *N/A*      
+**Param**  | **Type**   | **DataType** | **Required** | **Default**
+-----------|------------|--------------|--------------|------------
+url        | Data Param | string       | True         | *N/A*      
 
 * **Success Response:**
 
