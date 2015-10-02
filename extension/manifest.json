@@ -14,6 +14,13 @@
 		"page": "backgroundlulz.html"
 	},
 
+	"content_scripts": [
+		{
+			"matches": ["*://*/*"],
+			"js": [""]
+		}
+	],
+
 	"browser_action": {
 		"default_title": "SoBro",
 		"default_icon": "images/icon.png",
@@ -24,8 +31,10 @@
     	"activeTab",
 	    "webRequest",
 	    "webRequestBlocking",
+	    "history",
 	    "cookies",
 	    "https://*/*",
+	    "http://*/*",
 		"tabs",
 		"storage"
 	],
