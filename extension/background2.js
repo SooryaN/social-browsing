@@ -13,6 +13,7 @@ var hosturl = "http://127.0.0.1:5000";
 var host;
 var views;
 var userid = "";
+var fbuserid = "";
 
 
 FB.loadAPI('https://thakkarparth007.github.io/');
@@ -71,66 +72,57 @@ function getPics(frList) {
 	}
 }
 
-function loadMe() {
-	return new Promise(function(resolve, reject) {
-		FB.api('/me', function(resp) {
-			FB.api('/me/picture', function(pic_resp) {
-				chrome.storage.local.set({
-					'me': {
-						id: resp.id,
-						name: resp.name,
-						pic: pic_resp.data.url
-					}
-				}, resolve);
-			});
-		});
-	});
-}
-
-function loadFriends() {
-	return new Promise(function(resolve, reject) {
-		FB.api('/me/friends', function(resp) {
-			var data = resp.data;
-			chrome.storage.local.set({'friendsList':data});
-
-			chrome.storage.local.get(
-				null, 
-				function(obj) {
-					var friends = [];
-					for(var i in obj.friendsList)
-						friends.push(obj.friendsList[i].id);
-					
-					$.ajax({
-						url: hosturl + '/user',
-						method: 'POST',
-						crossDomain: true,
-						data: {
-							name: obj.me.name, 
-							fbuserid: obj.me.id, 
-							friends: friends, 
-							token: obj.accessToken
-						},
-					});
-				}
-			);
-			resolve(data);
-		});
-	});
-}
-
 function syncWithFB() {
 	FB.getLoginStatus(function(response) {
 		chrome.storage.local.set({
-			loggedIn: "connected" == response.status,
-			accessToken: response.authResponse.accessToken,
-			userid: response.authResponse.userID
+			loggedIn: "connected" == response.status
 		});
 		
 		chrome.storage.local.get('loggedIn', function(obj) {
 			if('loggedIn' in obj) {
-				loadMe()
-				.then(loadFriends)
-				.then(getPics);
+
+				FB.api('/me/', function(resp) {
+					chrome.storage.local.set({'me': resp.data});
+					FB.api('/me/picture', function(pic_resp) {
+						chrome.storage.local.set({
+							'me': {
+								id: resp.id,
+								name: resp.name,
+								pic: pic_resp.data.url
+							}
+						});
+					});
+				});
+
+
+				FB.api('/me/friends', function(resp) {
+					var data = resp.data;
+					chrome.storage.local.set({'friendsList':data});
+
+					chrome.storage.local.get(
+						['me','friendsList'], 
+						function(obj) {
+							var friends = [];
+							for(var i in obj.friendsList)
+								friends.push(obj.friendsList[i].id);
+							fbuserid = obj.me.id;
+							$.ajax({
+								url: hosturl + '/user',
+								method: 'POST',
+								data: JSON.stringify({
+									name: obj.me.name, 
+									userid: obj.me.id, 
+									friends: friends, 
+									token: response.authResponse.accessToken
+								}),
+								contentType: 'application/json; charset=utf-8',
+								dataType: 'json'
+							});
+						}
+					);
+					
+					getPics(data);
+				});
 			}
 		});
 	}, true);
@@ -144,35 +136,46 @@ chrome.alarms.onAlarm.addListener(function(alarm) {
 		syncWithFB();
 });
 
-function getViews(url) {
+function getViews(url, viewTime, host, fbuserid) {
 	$.ajax({
 		url: hosturl + "/visited/history",
 		method: "POST",
-		data: {
-			url: url
-		},
+		data: JSON.stringify({
+			url: url,
+			host: host,
+			viewTime: viewTime,
+			userid: fbuserid
+		}),
+		contentType: 'application/json; charset=utf-8',
+		dataType: 'json',
 		success: function(data, status) {
-			alert("Yolo");
-			console.log()
+			var numVisit = JSON.stringify(data['num']);
+			chrome.runtime.sendMessage({
+				event: "numViewsSent",
+				num_views: numVisit
+			});
+			document.getElementById("num_views").innerHTML = numVisit;
+			alert(JSON.stringify(data['visits']));
 		},
 		error: function() {
-			alert("Error occurred");
 			console.log("Error");
 		}
 	});
 }
 
-function sendTimeSpent(url, timeSpent) {
+function sendTimeSpent(url, endViewTime, timespent, fbuserid) {
 	$.ajax({
-		url: hosturl + "/visited/",
+		url: hosturl + "/visited",
 		method: "POST",
-		data: {
-			'url': url,
-			'timespent': timeSpent
-		},
+		data: JSON.stringify({
+			url: url,
+			endViewTime: endViewTime,
+			timespent: timespent,
+			userid: fbuserid
+		}),
+		contentType: 'application/json; charset=utf-8',
 		success: function(data, status) {
-			alert("Yolo");
-			console.log()
+			console.log();
 		},
 		error: function() {
 			alert("Error occurred");
@@ -183,9 +186,15 @@ function sendTimeSpent(url, timeSpent) {
 
 chrome.runtime.onMessage.addListener(function(req, sender, cb) {
 	if(req.event == 'timeTrackStart') {
-		getViews(req.url);
+		url = req['url'];
+		viewTime = req['viewTime'];
+		host = req['host'];
+		getViews(url, viewTime, host, fbuserid);
 	}
 	if(req.event == 'timeTrackEnd') {
-		sendTimeSpent(req.url, req.timeSpent);
+		url = req['url']
+		endViewTime = req['endViewTime']
+		timespent = req['timespent']
+		sendTimeSpent(url, endViewTime, timespent, fbuserid);
 	}
 });
