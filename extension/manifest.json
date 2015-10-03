@@ -14,6 +14,13 @@
 		"page": "backgroundlulz.html"
 	},
 
+	"content_scripts": [
+		{
+			"matches": "<all_urls>",
+			"js": ["timeTrack.js"]
+		}
+	],
+
 	"browser_action": {
 		"default_title": "SoBro",
 		"default_icon": "images/icon.png",
