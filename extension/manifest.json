@@ -10,7 +10,7 @@
 	},
 
 	"background": {
-		// "scripts": ["jquery-1.11.3.min.js", "background.js"],
+		// "scripts": ["jquery.min.js", "background.js"],
 		"page": "backgroundlulz.html"
 	},
 
