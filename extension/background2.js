@@ -156,8 +156,8 @@ function sendTimeSpent(url, timeSpent) {
 		url: hosturl + "/visited/",
 		method: "POST",
 		data: {
-			url: url,
-			timespent: timespent
+			'url': url,
+			'timespent': timeSpent
 		},
 		success: function(data, status) {
 			alert("Yolo");
