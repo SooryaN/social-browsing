@@ -7,6 +7,14 @@
 		'timeSpent' for each open page
  */
 
+var url;
+//HOST URL
+var hosturl = "127.0.0.1:5000";
+var host;
+var views;
+var userid = "";
+
+
 FB.loadAPI('https://thakkarparth007.github.io/');
 
 window.fbAsyncInit = function() {
@@ -32,24 +40,28 @@ function setPopupPage(changes) {
 }
 
 // untested!
+// NOTE: The first part of the method is noobish.
+// One should check the chrome.store for the pic
+// attribute. Too complicated for now. :P
 function getPics(frList) {
 	var newFrs = [];
+	var jobs_left1 = 0;
 	for(var i in frList) {
 		var fr = frList[i];
 		if('pic' in fr) continue;
 
-		newFrs.push(frList);
+		newFrs.push(fr);
 	}
 
-	var jobs_left = newFrs.length;
+	var jobs_left2 = newFrs.length;
 	for(var i in newFrs) {
 		var fr = newFrs[i];
 		(function(i, fr) {
 			FB.api('/' + fr.id + '/picture', function(pic) {
-				jobs_left--;
+				jobs_left2--;
 				fr.pic = pic.data.url;
 
-				if(!jobs_left) {
+				if(!jobs_left2) {
 					chrome.storage.local.set({
 						'friendsList': frList
 					});
@@ -85,11 +97,48 @@ chrome.alarms.onAlarm.addListener(function(alarm) {
 		syncWithFB();
 });
 
-function TimeTracker() {
-
+function getViews(url) {
+	$.ajax({
+		url: hosturl + "/visited/history",
+		method: "POST",
+		data: {
+			url: url
+		},
+		success: function(data, status) {
+			alert("Yolo");
+			console.log()
+		},
+		error: function() {
+			alert("Error occurred");
+			console.log("Error");
+		}
+	});
 }
 
+function sendTimeSpent(url, timeSpent) {
+	$.ajax({
+		url: hosturl + "/visited/",
+		method: "POST",
+		data: {
+			url: url,
+			timespent: timespent
+		},
+		success: function(data, status) {
+			alert("Yolo");
+			console.log()
+		},
+		error: function() {
+			alert("Error occurred");
+			console.log("Error");
+		}
+	});
+}
 
-
-
-
+chrome.runtime.onMessage.addListener(function(req, sender, cb) {
+	if(req.event == 'timeTrackStart') {
+		getViews(req.url);
+	}
+	if(req.event == 'timeTrackEnd') {
+		sendTimeSpent(req.url, req.timeSpent);
+	}
+});
