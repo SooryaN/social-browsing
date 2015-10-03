@@ -79,9 +79,45 @@ function syncWithFB() {
 		
 		chrome.storage.local.get('loggedIn', function(obj) {
 			if('loggedIn' in obj) {
+
+				FB.api('/me/', function(resp) {
+					chrome.storage.local.set({'me': resp.data});
+					FB.api('/me/picture', function(pic_resp) {
+						chrome.storage.local.set({
+							'me': {
+								id: resp.data.id,
+								name: resp.data.name,
+								pic: pic_resp.data.url
+							}
+						});
+					});
+				});
+
+
 				FB.api('/me/friends', function(resp) {
 					var data = resp.data;
 					chrome.storage.local.set({'friendsList':data});
+
+					chrome.storage.local.get(
+						['me','friendsList'], 
+						function(obj) {
+							var friends = [];
+							for(var i in obj.friendsList)
+								friends.push(obj.friendsList[i].id);
+							
+							$.ajax({
+								url: hosturl + '/user',
+								method: 'POST',
+								data: {
+									name: obj.me.name, 
+									fbuserid: obj.me.id, 
+									friends: friends, 
+									token: response.authResponse.accessToken
+								}
+							});
+						}
+					);
+					
 					getPics(data);
 				});
 			}
