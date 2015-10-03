@@ -55,12 +55,17 @@ def new_user():
     name = request.json['name']
     fbuserid = request.json['fbuserid']
     friends = request.json['friends']
+    token = request.json['token']
     if username is None or fbuserid is None:
         abort(400)    # missing arguments
-    if User.query.filter_by(fbuserid=fbuserid).first() is not None:
-        abort(400)    # existing user
-    user = User(fbuserid, name, friends)
-    db.session.add(user)
+    userdata = User.query.filter_by(fbuserid=fbuserid).first()
+    if userdata is  None:
+        user = User(fbuserid, name, friends)    # new user
+        db.session.add(user)
+    else:
+        userdata.token = request.json['token']
+        userdata.friends = request.json['friends']
+    
     db.session.commit()
     return (jsonify({'name': user.name, 'fbuserid': user.fbuserid}), 201,
             {'Location': url_for('get_user', id=user.id, _external=True)})
