@@ -4,6 +4,7 @@ from flask import Flask, jsonify, abort, request, make_response, url_for, g
 from flask.ext.httpauth import HTTPBasicAuth
 from flask.ext.sqlalchemy import SQLAlchemy
 from datetime import datetime
+from flask.ext.cors import CORS, cross_origin
 
 app = Flask(__name__, static_url_path="")
 auth = HTTPBasicAuth()
@@ -11,14 +12,16 @@ db = SQLAlchemy(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
 app.config['SECRET_KEY'] = 'the quick brown fox jumps over the lazy dog'
 # app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
-
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 from models import *
+annotations = []
 
 
 @auth.verify_password
-def verify_password(username_or_token, password):
-    user = User.query.filter_by(username=username_or_token).first()
-    if not user:
+def verify_password(username, token):
+    user = User.query.filter_by(username=username).first()
+    if not user or token != user.token:
         return False
     g.user = user
     return True
@@ -84,6 +87,26 @@ def del_user(fbid):
         db.session.commit()
     return jsonify({'name': name})
 
+# @app.route("/annotator")
+# @cross_origin()
+# def helloWorld():
+#   return "Hello, cross-origin-world!"
+
+# @app.route("/annotator/search")
+# @cross_origin()
+# def helloWorld1():
+
+#   a =jsonify({"total":len(annotations),"rows":annotations})
+#   print a
+#   return a
+
+# @app.route("/annotator/annotations", methods = ['POST'])
+# @cross_origin()
+# def helloWorld2():
+#     annotations.append(dict(request.json))
+#     print annotations
+#     return jsonify({"success":"Added"})
+
 
 # returns user history
 @app.route('/visited', methods=['GET'])
@@ -111,10 +134,20 @@ def get_user_history(uid):
 
 # Logs in the logged in user's visit to a page
 
+
+@app.route('/visited', methods=['POST'])
+@auth.login_required
+def add_to_visited():
+    visit = Visited_logs.query.filter_by(fbuserid=g.user.fbuserid).first()
+    visit.endtime = datetime.fromtimestamp(int(request.json['endViewTime']))
+    visit.time_spent = (visit.endtime - visit.starttime).total_seconds()
+    db.session.commit()
+    return jsonify({'Status': 'Changed'}), 200
+
 # Add user visit to db
 
 
-@app.route('/visited', methods=['POST'])
+@app.route('/visited/history', methods=['POST'])
 @auth.login_required
 def add_to_visited():
     if not request.json:
@@ -129,9 +162,9 @@ def add_to_visited():
             host = 'http://'+url.split('/')[2]
 
         viewTime = datetime.fromtimestamp(int(request.json['viewTime']))
-        endViewTime = datetime.fromtimestamp(int(request.json['endViewTime']))
-        time_spent = endViewTime - viewTime
-        time_spent = time_spent.total_seconds()
+        endViewTime = datetime.fromtimestamp(int(request.json['viewTime']))
+        time_spent = 0
+        # time_spent = time_spent.total_seconds()
 
         visit = Visited_logs(
             userid, url, host, viewTime, endViewTime, time_spent)
@@ -248,15 +281,14 @@ def send_a_message(receiverid):
     if not public and receiverid not in g.user.friends.split(','):
         abort(400)
     url = request.json['url']
-    messageText = request.json['message']
-    html = request.json['html']
+    messageList = request.json['ls']
     if request.json['public'] == "True":
         public = True
     else:
         public = False
     time = datetime.now()
     message = Messages(
-        url, senderid, receiverid, messageText, html, public, time)
+        url, senderid, receiverid, messageList, public, time)
     db.session.add(message)
     db.session.commit()
     message = Messages.query.all()[-1]

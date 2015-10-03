@@ -10,6 +10,7 @@ class User(db.Model):
     friends = db.Column(db.String, nullable=True)
     fbuserid = db.Column(db.String(64), nullable=False, unique=True)
     name = db.Column(db.String(64), nullable=False)
+    token = db.Column(db.String, nullable=False)
 
     def __init__(self,fbuserid,name,friends):
         self.fbuserid = fbuserid
@@ -81,22 +82,20 @@ class Messages(db.Model):
     url = db.Column(db.String, nullable=False)
     senderid = db.Column(db.String, nullable=False)
     receiverid = db.Column(db.String, nullable=False)
-    message = db.Column(db.String, nullable=False)
-    html = db.Column(db.String, nullable=False)
+    messageList = db.Column(db.String, nullable=False)
     seen = db.Column(db.Boolean, nullable=True)
     public = db.Column(db.Boolean, nullable=False)
     time = db.Column(db.DateTime, nullable=False)
 
-    def __init__(self, url, senderid, receiverid, message, html, public, time):
+    def __init__(self, url, senderid, receiverid, messageList, html, public, time):
         # self.site_id = site_id
-        self.message = message
+        self.messageList = messageList
         self.senderid = senderid
         self.receiverid = receiverid
         self.public = public
-        self.html = html
         self.time = time
         self.url = url
         self.seen = False
 
     def __repr__(self):
-        return "'%s' by '%s'" % (self.html, self.senderid)
+        return "'%s' by '%s'" % (self.url,self.senderid)

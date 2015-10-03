@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html manifest="manifest.appcache">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Annotator.js</title>
+  <link rel="stylesheet" href="./annotator.min.css"/>
+  <style>
+    #send{
+        position:fixed;
+        width:100%;
+        display:none;
+        height:30px;
+        background: white;
+        border-bottom: 2px solid black;
+    }
+  </style>
+</head>
+<body>
+    <div id = "send">
+        <input type="text" id = "friend">
+        <button id = "sendbutton">Send</button>
+    </div>
+  <p>Current Connectivity: <span id="status"></span></p>
+  <div id="content">
+    <p>One morning, when Gregor Samsa woke from troubled dreams, he found himself transformed in his bed into a horrible vermin. He lay on his armour-like back, and if he lifted his head a little he could see his brown belly, slightly <big>domed</big> and divided by arches into stiff sections. The bedding was hardly able to cover it and seemed ready to slide off any moment. His many legs, pitifully thin compared with the size of the rest of him, waved about helplessly as he looked.</p>
+
+    <p>"What's happened to me?" he thought. It wasn't a dream. His room, a proper human room although a little too small, lay peacefully between its four familiar walls. A collection of textile samples lay spread out on the table - Samsa was a travelling salesman - and above it there hung a picture that he had recently cut out of an illustrated magazine and housed in a nice, gilded frame. It showed a lady fitted out with a fur hat and fur boa who sat upright, raising a heavy fur muff that covered the whole of her lower arm towards the viewer.</p>
+
+    <p>Gregor then turned to look out the window at the dull weather. Drops of rain could be heard hitting the pane, which made him feel quite sad. "How about if I sleep a little bit longer and forget all this nonsense", he thought, but that was something he was unable to do because he was used to sleeping on his right, and in his present state couldn't get into that position. However hard he threw himself onto his right, he always rolled back to where he was. He must have tried it a hundred times, shut his eyes so that he wouldn't have to look at the floundering legs, and only stopped when he began to feel a mild, dull pain there that he had never felt before.</p>
+  </div>
+  <p><button id="clear-storage">Clear LocalStorage</button></p>
+  <script src="./jquery.min.js"></script>
+  <script src="./annotator.min.js"></script>
+  <script src="./annotator.offline.min.js"></script>
+  <script>
+    var content = $("#content").annotator();
+    content.annotator('addPlugin', 'Offline');
+    var annotator = content.data('annotator');
+
+    $("#clear-storage").click(function () {
+      if (annotator) {
+        annotator.plugins.Offline.store.clear()
+      }
+    });
+    $('.annotator-save').click(function(){$("#send").show()});
+    $('#sendbutton').click(/* add parameters */)
+
+    function send(receiver_id,public,url){
+        var keys = Object.keys(localStorage)
+        var ls = {}
+        try{
+            keys.forEach(function(key){
+                ls[key] = localStorage.getItem(key) 
+            }) 
+        }
+        catch(e){}
+        var data = {'public':public,'url':url,'ls':JSON.stringify(ls) };
+    $.ajax({
+      type: "POST",
+      url: "http://localhost:5000/messages"+receiver_id,
+      data: data
+      // success: ,
+      // dataType: dataType
+    });
+}
+  </script>
+</body>
+</html>
