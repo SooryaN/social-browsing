@@ -7,7 +7,7 @@ from passlib.apps import custom_app_context as pwd_context
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    friends = db.Column(db.String, nullable=True)
+    friends = db.Column(db.String, nullable=False)
     fbuserid = db.Column(db.String(64), nullable=False, unique=True)
     name = db.Column(db.String(64), nullable=False)
     token = db.Column(db.String, nullable=False)

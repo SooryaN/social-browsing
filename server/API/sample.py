@@ -19,8 +19,8 @@ annotations = []
 
 
 @auth.verify_password
-def verify_password(username, token):
-    user = User.query.filter_by(username=username).first()
+def verify_password(fbuserid, token):
+    user = User.query.filter_by(fbuserid=fbuserid).first()
     if not user or token != user.token:
         return False
     g.user = user
@@ -56,7 +56,7 @@ def new_user():
     fbuserid = request.json['fbuserid']
     friends = request.json['friends']
     token = request.json['token']
-    if username is None or fbuserid is None:
+    if token is None or fbuserid is None:
         abort(400)    # missing arguments
     userdata = User.query.filter_by(fbuserid=fbuserid).first()
     if userdata is  None:
@@ -142,7 +142,7 @@ def get_user_history(uid):
 
 @app.route('/visited', methods=['POST'])
 @auth.login_required
-def add_to_visited():
+def update_to_visited():
     visit = Visited_logs.query.filter_by(fbuserid=g.user.fbuserid).first()
     visit.endtime = datetime.fromtimestamp(int(request.json['endViewTime']))
     visit.time_spent = (visit.endtime - visit.starttime).total_seconds()

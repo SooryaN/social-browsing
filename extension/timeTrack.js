@@ -17,14 +17,14 @@ window.addEventListener('load', function() {
 	});
 
 	chrome.runtime.sendMessage({
-		event: "timeTrackStart"
+		event: "timeTrackStart",
 		url: location.href
 	})
 });
 
 window.addEventListener("beforeunload", function() {
 	chrome.runtime.sendMessage({
-		event: "timeTrackEnd"
+		event: "timeTrackEnd",
 		url: location.href,
 		timeSpent: timeSpent
 	})
