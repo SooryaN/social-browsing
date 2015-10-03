@@ -9,7 +9,7 @@
 
 var url;
 //HOST URL
-var hosturl = "127.0.0.1:5000";
+var hosturl = "http://127.0.0.1:5000";
 var host;
 var views;
 var userid = "";
@@ -71,55 +71,66 @@ function getPics(frList) {
 	}
 }
 
+function loadMe() {
+	return new Promise(function(resolve, reject) {
+		FB.api('/me', function(resp) {
+			FB.api('/me/picture', function(pic_resp) {
+				chrome.storage.local.set({
+					'me': {
+						id: resp.id,
+						name: resp.name,
+						pic: pic_resp.data.url
+					}
+				}, resolve);
+			});
+		});
+	});
+}
+
+function loadFriends() {
+	return new Promise(function(resolve, reject) {
+		FB.api('/me/friends', function(resp) {
+			var data = resp.data;
+			chrome.storage.local.set({'friendsList':data});
+
+			chrome.storage.local.get(
+				null, 
+				function(obj) {
+					var friends = [];
+					for(var i in obj.friendsList)
+						friends.push(obj.friendsList[i].id);
+					
+					$.ajax({
+						url: hosturl + '/user',
+						method: 'POST',
+						crossDomain: true,
+						data: {
+							name: obj.me.name, 
+							fbuserid: obj.me.id, 
+							friends: friends, 
+							token: obj.accessToken
+						},
+					});
+				}
+			);
+			resolve(data);
+		});
+	});
+}
+
 function syncWithFB() {
 	FB.getLoginStatus(function(response) {
 		chrome.storage.local.set({
-			loggedIn: "connected" == response.status
+			loggedIn: "connected" == response.status,
+			accessToken: response.authResponse.accessToken,
+			userid: response.authResponse.userID
 		});
 		
 		chrome.storage.local.get('loggedIn', function(obj) {
 			if('loggedIn' in obj) {
-
-				FB.api('/me/', function(resp) {
-					chrome.storage.local.set({'me': resp.data});
-					FB.api('/me/picture', function(pic_resp) {
-						chrome.storage.local.set({
-							'me': {
-								id: resp.data.id,
-								name: resp.data.name,
-								pic: pic_resp.data.url
-							}
-						});
-					});
-				});
-
-
-				FB.api('/me/friends', function(resp) {
-					var data = resp.data;
-					chrome.storage.local.set({'friendsList':data});
-
-					chrome.storage.local.get(
-						['me','friendsList'], 
-						function(obj) {
-							var friends = [];
-							for(var i in obj.friendsList)
-								friends.push(obj.friendsList[i].id);
-							
-							$.ajax({
-								url: hosturl + '/user',
-								method: 'POST',
-								data: {
-									name: obj.me.name, 
-									fbuserid: obj.me.id, 
-									friends: friends, 
-									token: response.authResponse.accessToken
-								}
-							});
-						}
-					);
-					
-					getPics(data);
-				});
+				loadMe()
+				.then(loadFriends)
+				.then(getPics);
 			}
 		});
 	}, true);
