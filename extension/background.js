@@ -8,6 +8,8 @@ var host;
 var views;
 var userid = "";
 
+
+
 function informVisited(url, viewTime, endViewTime, host, elapsedTime, hosturl) {
 
 	var xhr = new XMLHttpRequest();
@@ -26,6 +28,9 @@ function getViews(userid, url, hosturl) {
 	xhr.open('GET', hosturl + '/visited', true);
 	xhr.onload = function() {
 		received_views = responseText;
+		chrome.storage.local.get(key, function(obj){
+			friendListFunction();
+		});
 	}
 	xhr.send("url="+String(url)+"&userid="+String(userid));
 

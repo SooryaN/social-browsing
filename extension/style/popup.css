@@ -1,9 +1,79 @@
 .box {
 	width: 200px;
 	height: 300px;
-}
+	}
 
 .views {
 	min-width: 40px;
 	min-height: 20px;
+	text-align: center;
+	vertical-align: center;
+	padding-top: 20px;
+	font-size: 13px;
+}
+
+.annotate {
+	width: 160px;
+	height: 50px;
+	margin-left: 20px;
+	text-align: center;
+	font-size: 20px;
+	border-radius: 5px;
+	border-color: gray;
+	border-style: solid;
+	border-width: 2px;
+	vertical-align: center;
+	padding-top: 19px;
+	font-family: 'Lobster', sans-serif;
+}
+.annotate:hover {
+	-webkit-filter: blur(0.6px);
+}
+
+.newtab {
+	vertical-align: center;
+	/*padding-top: 10px;*/
+	height: 10px;
+	padding-bottom: 4px;
+	font-family: 'Lobster', sans-serif;
+}
+
+.message {
+	width: 160px;
+	height: 50px;
+	margin-left: 20px;
+	text-align: center;
+	font-size: 20px;
+	border-radius: 5px;
+	border-color: gray;
+	border-style: solid;
+	border-width: 2px;
+	vertical-align: center;
+	padding-top: 19px;
+	font-family: 'Lobster', sans-serif;
+	margin-top: 20px;
+}
+.message:hover {
+	-webkit-filter: blur(0.6px);
+}
+
+body {
+	background-image: url("tessellation.jpg");
+    background-repeat: repeat;
+    -webkit-animation: animatedBackground 40s linear infinite;
+    animation: animatedBackground 50s linear infinite;
+	border-radius: 5px;
+	margin: 0px;
+}
+
+.sexy_line { 
+    margin: 25px 0;
+    height: 1px;
+    background: black;
+    background: -webkit-gradient(linear, 0 0, 100% 0, from(white), to(white), color-stop(50%, black));
+}
+
+@-webkit-keyframes animatedBackground {
+	from { background-position: 0 0; }
+	to { background-position: 100% 0; }
 }
