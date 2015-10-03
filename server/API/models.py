@@ -1,7 +1,7 @@
 from sample import db
 from flask.ext.sqlalchemy import sqlalchemy
 from sqlalchemy.orm import relationship, backref
-from passlib.apps import custom_app_context as pwd_context
+#from passlib.apps import custom_app_context as pwd_context
 
 
 class User(db.Model):
@@ -12,10 +12,11 @@ class User(db.Model):
     name = db.Column(db.String(64), nullable=False)
     token = db.Column(db.String, nullable=False)
 
-    def __init__(self,fbuserid,name,friends):
+    def __init__(self,fbuserid,name,friends,token):
         self.fbuserid = fbuserid
         self.name = name
         self.friends = friends
+        self.token = token
 
     def __repr__(self):
         return "username is '%s'" % (self.username)

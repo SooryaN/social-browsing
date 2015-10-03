@@ -43,3 +43,4 @@ window.fbAsyncInit = function() {
 	wait--;
 	if(!wait) work();
 };
+

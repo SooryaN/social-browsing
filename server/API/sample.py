@@ -45,7 +45,7 @@ def not_found(error):
 
 
 @app.route('/api/dummytest')
-@auth.login_required
+# @auth.login_required
 def get_resource():
     return jsonify({'data': 'Hello, %s!' % g.user.name})
 
@@ -53,22 +53,21 @@ def get_resource():
 @app.route('/user', methods=['POST'])
 def new_user():
     name = request.json['name']
-    fbuserid = request.json['fbuserid']
-    friends = request.json['friends']
+    fbuserid = request.json['userid']
+    friends = ",".join(request.json['friends'])
     token = request.json['token']
     if token is None or fbuserid is None:
         abort(400)    # missing arguments
     userdata = User.query.filter_by(fbuserid=fbuserid).first()
     if userdata is  None:
-        user = User(fbuserid, name, friends)    # new user
+        user = User(fbuserid, name, friends, token)    # new user
         db.session.add(user)
     else:
         userdata.token = request.json['token']
-        userdata.friends = request.json['friends']
+        userdata.friends = ",".join(request.json['friends'])
     
     db.session.commit()
-    return (jsonify({'name': user.name, 'fbuserid': user.fbuserid}), 201,
-            {'Location': url_for('get_user', id=user.id, _external=True)})
+    return jsonify({"yo":"yo"})
 
 
 @app.route('/users/<string:fbid>')
@@ -115,7 +114,7 @@ def del_user(fbid):
 
 # returns user history
 @app.route('/visited', methods=['GET'])
-# @auth.login_required
+# # @auth.login_required
 def get_user_history(uid):
     try:
         userid = g.user.fbuserid
@@ -141,33 +140,36 @@ def get_user_history(uid):
 
 
 @app.route('/visited', methods=['POST'])
-@auth.login_required
+# @auth.login_required
 def update_to_visited():
-    visit = Visited_logs.query.filter_by(fbuserid=g.user.fbuserid).first()
-    visit.endtime = datetime.fromtimestamp(int(request.json['endViewTime']))
-    visit.time_spent = (visit.endtime - visit.starttime).total_seconds()
-    db.session.commit()
+    try:
+        visit = Visited_logs.query.filter_by(url = request.json['url']).filter_by(fbuserid=request.json['userid']).order_by(Visited_logs.id.desc()).first()
+        visit.endtime = datetime.fromtimestamp(int(request.json['endViewTime'])/1000)
+        visit.time_spent = (visit.endtime - visit.starttime).total_seconds()
+        db.session.commit()
+    except:
+        pass
     return jsonify({'Status': 'Changed'}), 200
 
 # Add user visit to db
 
 
 @app.route('/visited/history', methods=['POST'])
-@auth.login_required
+# @auth.login_required
 def add_to_visited():
     if not request.json:
         print request.json
         abort(400)
     else:
-        userid = g.user.fbuserid
+        userid = request.json['userid']
         url = request.json['url']
         try:
             host = request.json['host']
         except:
             host = 'http://'+url.split('/')[2]
 
-        viewTime = datetime.fromtimestamp(int(request.json['viewTime']))
-        endViewTime = datetime.fromtimestamp(int(request.json['viewTime']))
+        viewTime = datetime.fromtimestamp(int(request.json['viewTime'])/1000)
+        endViewTime = datetime.fromtimestamp(int(request.json['viewTime'])/1000)
         time_spent = 0
         # time_spent = time_spent.total_seconds()
 
@@ -198,11 +200,13 @@ def add_to_visited():
             c.pop('_sa_instance_state', 0)
             commentsList.append(c)
 
-    return jsonify({'url': url, 'visits': visitsList, 'comments': commentsList}), 201
+        numvisit = len(visitsList)
+
+    return jsonify({'url': url, 'visits': visitsList, 'comments': commentsList, 'num': numvisit}), 201
 
 
 @app.route('/visited/<int:visitid>', methods=['DELETE'])
-@auth.login_required
+# @auth.login_required
 def delete_page_view(visitid):
     view = Visited_logs.query.filter_by(id=visitid)
     if not view:
@@ -242,7 +246,7 @@ def delete_page_view(visitid):
 
 
 @app.route('/comments', methods=['POST'])
-@auth.login_required
+# @auth.login_required
 def create_task():
     if not request.json:
         abort(400)
@@ -262,7 +266,7 @@ def create_task():
 
 
 @app.route('/comments/<int:commentid>', methods=['DELETE'])
-@auth.login_required
+# @auth.login_required
 def delete_comment(commentid):
     comment = Comments.query.filter_by(id=commentid)
     if not comment:
@@ -274,7 +278,7 @@ def delete_comment(commentid):
 
 
 @app.route('/messages/<int:receiverid>', methods=['POST'])
-@auth.login_required
+# @auth.login_required
 def send_a_message(receiverid):
     if not request.json:
         abort(400)
@@ -303,7 +307,7 @@ def send_a_message(receiverid):
 
 
 @app.route('/messages', methods=['GET'])
-@auth.login_required
+# @auth.login_required
 def view_messages():
     try:
         since = request.get['since']
@@ -325,7 +329,7 @@ def view_messages():
 
 
 @app.route('/messages/seen/<int:messageid>', methods=['POST'])
-# @auth.login_required
+# # @auth.login_required
 def open_message(messageid):
     message = Messages.query.filter_by(id=messageid).first()
     message.seen = True

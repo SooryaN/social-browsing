@@ -2,6 +2,7 @@
 	Content script to track the time spent viewing the page
  */
 
+var startTime = Date.now();
 var timeSpent = 0;
 var showTime = null;
 
@@ -18,14 +19,17 @@ window.addEventListener('load', function() {
 
 	chrome.runtime.sendMessage({
 		event: "timeTrackStart",
-		url: location.href
-	})
+		url: location.href,
+		viewTime: startTime,
+		host: location.hostname
+	});
 });
 
 window.addEventListener("beforeunload", function() {
 	chrome.runtime.sendMessage({
 		event: "timeTrackEnd",
 		url: location.href,
-		timeSpent: timeSpent
-	})
+		timespent: timeSpent,
+		endViewTime: Date.now()
+	});
 });
